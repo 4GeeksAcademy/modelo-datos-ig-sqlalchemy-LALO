@@ -1,8 +1,15 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, ForeignKey
+from sqlalchemy import String, Boolean, ForeignKey, Table, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 db = SQLAlchemy()
+
+followers_table = Table(
+    "followers",
+    db.metadata,
+    Column("follower_id", ForeignKey('user.id'), primary_key=True),
+    Column("follow_id", ForeignKey('user.id'), primary_key=True),
+)
 
 class User(db.Model):
     __tablemname___ = "users"
