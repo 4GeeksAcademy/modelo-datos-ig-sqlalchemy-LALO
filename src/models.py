@@ -7,12 +7,12 @@ db = SQLAlchemy()
 followers_table = Table(
     "followers",
     db.metadata,
-    Column("follower_id", ForeignKey('user.id'), primary_key=True),
-    Column("follow_id", ForeignKey('user.id'), primary_key=True),
+    Column("follower_id", ForeignKey('users.id'), primary_key=True),
+    Column("follow_id", ForeignKey('users.id'), primary_key=True),
 )
 
 class User(db.Model):
-    __tablemname___ = "users"
+    __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(60), unique=True, nullable=False)
@@ -38,10 +38,11 @@ class Post(db.Model):
     __tablename__ = "posts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     title: Mapped[str] = mapped_column(String(150), nullable=False)
     content: Mapped[str] = mapped_column(String(200), nullable=False)
 
+    user: Mapped[User] = relationship("User", back_populates="posts")
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="post")
 
     def serialize(self):
@@ -57,8 +58,11 @@ class Comment(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     content: Mapped[str] = mapped_column(String(500), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
-    post_id: Mapped[int] = mapped_column(ForeignKey('post.id'), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
+    post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'), nullable=False)
+
+    user: Mapped[User] = relationship("User", back_populates="comments")
+    post: Mapped[Post] = relationship("Post", back_populates="comments")
 
     def serialize(self):
         return{
@@ -74,7 +78,7 @@ class Media (db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     type: Mapped[str] = mapped_column(String(500), nullable=False)
     url: Mapped[str] = mapped_column(String(500), nullable=False)
-    post_id: Mapped[int] = mapped_column(ForeignKey('post.id'), nullable=False)
+    post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'), nullable=False)
 
     def serialize(self):
         return{
